@@ -3,15 +3,18 @@
 gol::GameOfLife::GameOfLife(int total_ticks_in, int tick_length_in) {
     total_ticks = total_ticks_in;
     tick_length = tick_length_in;
-    rows = getSize(0) - 6;
-    cols = getSize(1) - 10;
-    space.assign(rows, std::vector<int>(cols));
-    space_aux = space;
-    outstr = "";
-    outstr.reserve(38600);
+    row_pad = 6;
+    col_pad = 10;
 }
 
 void gol::GameOfLife::Init() {
+    rows = getSize(0) - row_pad;
+    cols = getSize(1) - col_pad;
+    space.assign(rows, std::vector<int>(cols));
+    space_aux = space;
+    outstr = "";
+    // outstr.reserve(38600);
+
     srand(time(NULL));
     for (int i = rows / 20; i <= 19 * rows / 20; i++) {
         for (int j = cols / 40; j <= 39 * cols / 40; j++) {
@@ -61,12 +64,16 @@ void gol::GameOfLife::Render(int tick) {
     }
     outstr += divider();
     std::cout << outstr << std::endl;
-    outstr.resize(0);
+    // outstr.resize(0);
 }
 
 void gol::GameOfLife::Update() {
-    for (int i = 0; i < rows; i++) {
-        for (int j = 0; j < cols; j++) {
+    if (rows != getSize(0) - row_pad || cols != getSize(1) - col_pad) {
+        // force game over
+        tick = total_ticks;
+    }
+    for (int i = 0; i < rows && i < space_aux.size(); i++) {
+        for (int j = 0; j < cols && j < space_aux[0].size(); j++) {
             int numCells = getCells(i, j);
             space_aux[i][j] =
                 (numCells == 3 || (numCells == 2 && space[i][j])) ? 1 : 0;

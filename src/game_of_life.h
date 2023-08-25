@@ -14,7 +14,8 @@ namespace gol {
 
 class GameOfLife {
    private:
-    int rows, cols, SIZE;
+    int rows, cols;
+    int row_pad, col_pad;
     int tick, total_ticks, tick_length;
     std::vector<std::vector<int>> space;
     std::vector<std::vector<int>> space_aux;

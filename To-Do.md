@@ -2,4 +2,8 @@
 
 - Clean-up requirements.
 - Upgrade to use chafa ?
-- Automatically Restart everytime tty size changes
+- Move getSize to seperate .cpp / .h files
+
+# No Plans
+
+- Resize sometimes bugs out on vscode.
