@@ -1,88 +1,116 @@
 #include "game_of_life.h"
 
-gol::GameOfLife::GameOfLife() {
-    total_ticks = 3000;
-    TICK_LENGTH = 300000;
-    // Move above lines over to the calling program code
-
-    SIZE = 56;
-    I = SIZE;
-    J = 180;
-    std::vector<int> temp(J);
-    space.assign(I, temp);
-    space_1 = space;
-    I = space.size();
-    J = space[0].size();
+gol::GameOfLife::GameOfLife(int total_ticks_in, int tick_length_in) {
+    total_ticks = total_ticks_in;
+    tick_length = tick_length_in;
+    rows = getSize(0) - 6;
+    cols = getSize(1) - 10;
+    space.assign(rows, std::vector<int>(cols));
+    space_aux = space;
     outstr = "";
     outstr.reserve(38600);
 }
 
 void gol::GameOfLife::Init() {
     srand(time(NULL));
-    for (int i = I / 20; i <= 19 * I / 20; i++) {
-        for (int j = J / 40; j <= 39 * J / 40; j++) {
+    for (int i = rows / 20; i <= 19 * rows / 20; i++) {
+        for (int j = cols / 40; j <= 39 * cols / 40; j++) {
             space[i][j] = (rand() % (4) == 0 ? 1 : 0);
         }
     }
 }
 
-void gol::GameOfLife::Render(int tick) {
-    outstr = "\t\t\t\t\t\t\t*****     tick : " + std::to_string(tick) +
-             "      *****\t\t\t\t\t\t\t\n\n" + shitstr();
+void gol::GameOfLife::Run() {
+    while (1) {
+        Init();
+        Render(0);
+        usleep(3000000);
+        for (tick = 0; tick < total_ticks; tick++) {
+            Update();
+            Render(tick);
+            usleep(tick_length);
+        }
+        Over();
+        usleep(3000000);
+    }
+}
 
-    for (int i = 0; i < I; i++) {
+void gol::GameOfLife::Render(int tick) {
+    int width = getSize(1);
+    std::string tick_str = std::to_string(tick);
+    int pad = std::max(0, 6 - static_cast<int>(tick_str.size()));
+    std::string padding(pad, ' ');
+    std::string trailer =
+        "*****     tick : " + padding + tick_str + "      *****\n";
+
+    outstr = "\n" + std::string((width - trailer.size()) / 2, ' ');
+    outstr += trailer;
+
+    outstr += divider();
+    for (int i = 0; i < rows; i++) {
         outstr.push_back(' ');
         outstr.push_back(' ');
         outstr.push_back(' ');
         outstr.push_back(' ');
         outstr.push_back('|');
-        for (int j = 0; j < J; j++) {
+        for (int j = 0; j < cols; j++) {
             outstr.push_back(space[i][j] ? '0' : ' ');
         }
         outstr.push_back('|');
         outstr.push_back('\n');
     }
-    outstr += shitstr();
+    outstr += divider();
     std::cout << outstr << std::endl;
     outstr.resize(0);
-    // cout << outstr.capacity() << endl;
 }
 
 void gol::GameOfLife::Update() {
-    for (int i = 0; i < I; i++) {
-        for (int j = 0; j < J; j++) {
+    for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < cols; j++) {
             int numCells = getCells(i, j);
-            space_1[i][j] =
+            space_aux[i][j] =
                 (numCells == 3 || (numCells == 2 && space[i][j])) ? 1 : 0;
         }
     }
-    space.swap(space_1);
+    space.swap(space_aux);
 }
 
 void gol::GameOfLife::Over() {
-    std::cout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
-    std::cout << "                                                  ";
-    std::cout << "                                                  ";
-    std::cout << " Game Over";
-    std::cout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
+    int height = getSize(0);
+    int width = getSize(1);
+    std::string padding((width - 10) / 2, ' ');
+    outstr = std::string(height / 2 - 1, '\n');
+    outstr += padding + "Game Over";
+    outstr += std::string(height / 2 - 1, '\n');
+    std::cout << outstr << std::endl;
+}
+
+int gol::GameOfLife::getSize(int x) {
+    struct winsize w;
+    ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+
+    if (x == 0)  // x == 0 indicates rows
+        return w.ws_row;
+    else  // x == 1 indcates columns
+        return w.ws_col;
 }
 
 int gol::GameOfLife::getCells(int i, int j) {
     int result = 0;
-    result += space[(i - 1 + I) % I][(j - 1 + J) % J];
-    result += space[(i - 1 + I) % I][j];
-    result += space[(i - 1 + I) % I][(j + 1) % J];
-    result += space[i][(j - 1 + J) % J];
-    result += space[i][(j + 1) % J];
-    result += space[(i + 1) % I][(j - 1 + J) % J];
-    result += space[(i + 1) % I][j];
-    result += space[(i + 1) % I][(j + 1) % J];
+    result += space[(i - 1 + rows) % rows][(j - 1 + cols) % cols];
+    result += space[(i - 1 + rows) % rows][j];
+    result += space[(i - 1 + rows) % rows][(j + 1) % cols];
+    result += space[i][(j - 1 + cols) % cols];
+    result += space[i][(j + 1) % cols];
+    result += space[(i + 1) % rows][(j - 1 + cols) % cols];
+    result += space[(i + 1) % rows][j];
+    result += space[(i + 1) % rows][(j + 1) % cols];
     return result;
 }
 
-std::string gol::GameOfLife::shitstr() {
+std::string gol::GameOfLife::divider() {
     std::string result = "    ";
-    for (int i = 0; i < J + 2; i++) {
+    for (int i = 0; i < cols + 2; i++) {
         result.push_back('-');
     }
     result.push_back('\n');

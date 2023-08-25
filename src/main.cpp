@@ -1,23 +1,10 @@
 #include "game_of_life.h"
 
 int main() {
-    gol::GameOfLife game;
-    while (1) {
-        game.Init();
-
-        game.tick = 0;
-        for (; game.tick < 10; game.tick++) {
-            game.Render(game.tick);
-            usleep(game.TICK_LENGTH);
-        }
-        for (; game.tick < game.total_ticks; game.tick++) {
-            game.Update();
-            game.Render(game.tick);
-            usleep(game.TICK_LENGTH);
-        }
-
-        game.Over();
-    }
+    int total_ticks = 1000;
+    int tick_length = 100000;
+    gol::GameOfLife game(total_ticks, tick_length);
+    game.Run();
 
     return 0;
 }

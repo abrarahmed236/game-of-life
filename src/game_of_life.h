@@ -1,7 +1,8 @@
 #ifndef Game_Of_Life
 #define Game_Of_Life
 
-#include <unistd.h>  // for sleep() function
+#include <sys/ioctl.h> // for tty size
+#include <unistd.h>  // for usleep() function
 
 #include <ctime>
 #include <iostream>
@@ -13,21 +14,24 @@ namespace gol {
 
 class GameOfLife {
    private:
-    int I, J, SIZE;
+    int rows, cols, SIZE;
+    int tick, total_ticks, tick_length;
     std::vector<std::vector<int>> space;
-    std::vector<std::vector<int>> space_1;
+    std::vector<std::vector<int>> space_aux;
     std::string outstr;
 
-   public:
-    int tick, total_ticks;
-    int TICK_LENGTH;
-    GameOfLife();
-    void Init();
     void Render(int tick);
     void Update();
     void Over();
+
+    int getSize(int x);
     int getCells(int i, int j);
-    std::string shitstr();
+    std::string divider();
+
+   public:
+    GameOfLife(int total_ticks_in, int tick_length_in);
+    void Init();
+    void Run();
 };
 
 }  // namespace gol
