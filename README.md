@@ -1,17 +1,10 @@
 # Game of Life
 
-<!-- ![GIF 0](./images/gameoflife.gif) -->
-
 Simulate the game of life on the terminal.
 
 ![GIF 2](./images/gol2.gif)
 
-<!-- |                             |                             |
-| --------------------------- | --------------------------- |
-|  |  |
-|  |  | -->
-
-Features:
+## Features:
 
 - Random starting cells each time.
 - Aware of terminal size. Will restart simulation with new size when you:
@@ -24,7 +17,7 @@ Features:
 
 ![GIF 1](./images/gol1.gif)
 
-Requirements:
+## Requirements:
 
 - linux terminal
 - gcc
@@ -32,7 +25,7 @@ Requirements:
 
 ![GIF 3](./images/gol3.gif)
 
-Instructions:
+## Instructions:
 
 - run `./build_all.sh` to build executable
 - run `./bin/Game_Of_Life` to run executable
