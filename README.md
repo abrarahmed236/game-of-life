@@ -1,11 +1,15 @@
 # Game of Life
 
+<!-- ![GIF 0](./images/gameoflife.gif) -->
+
 Simulate the game of life on the terminal.
 
-|                             |                             |
+![GIF 2](./images/gol2.gif)
+
+<!-- |                             |                             |
 | --------------------------- | --------------------------- |
-| ![GIF 1](./images/gol1.gif) | ![GIF 2](./images/gol2.gif) |
-| ![GIF 3](./images/gol3.gif) | ![GIF 4](./images/gol4.gif) |
+|  |  |
+|  |  | -->
 
 Features:
 
@@ -18,8 +22,19 @@ Features:
   - Pause / Unpause, Quit Simulation
   - Slower / Faster Simulation
 
+![GIF 1](./images/gol1.gif)
+
 Requirements:
 
 - linux terminal
 - gcc
 - cmake
+
+![GIF 3](./images/gol3.gif)
+
+Instructions:
+
+- run `./build_all.sh` to build executable
+- run `./bin/Game_Of_Life` to run executable
+
+![GIF 4](./images/gol4.gif)
