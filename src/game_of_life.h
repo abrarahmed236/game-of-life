@@ -1,8 +1,10 @@
 #ifndef Game_Of_Life
 #define Game_Of_Life
 
-#include <sys/ioctl.h> // for tty size
-#include <unistd.h>  // for usleep() function
+#include <fcntl.h> // for keypress
+#include <sys/ioctl.h>  // for tty size
+#include <termios.h>    // for tc_attributes
+#include <unistd.h>     // for usleep() function
 
 #include <ctime>
 #include <iostream>
@@ -14,6 +16,7 @@ namespace gol {
 
 class GameOfLife {
    private:
+    bool paused, running;
     int rows, cols;
     int row_pad, col_pad;
     int tick, total_ticks, tick_length;
@@ -23,10 +26,13 @@ class GameOfLife {
 
     void Render(int tick);
     void Update();
-    void Over();
+    void Over(std::string splash_string);
 
-    int getSize(int x);
-    int getCells(int i, int j);
+    void TogglePause();
+
+    int GetSize(int x);
+    int GetCells(int i, int j);
+    bool KeyPressed();
     std::string divider();
 
    public:

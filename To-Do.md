@@ -1,9 +1,13 @@
 # To-Do
 
-- Clean-up requirements.
+## Items
+- Clean-up Readme.
+- Add gifs.
 - Upgrade to use chafa ?
-- Move getSize to seperate .cpp / .h files
+- Refactor for easier readability.
+    - Move getSize to separate .cpp / .h files.
+    - Split code into separate files.
 
-# No Plans
+## No Plans
 
-- Resize sometimes bugs out on vscode.
+- Resize often bugs out on vscode terminal. Not in scope to fix.

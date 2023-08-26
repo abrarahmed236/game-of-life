@@ -5,11 +5,15 @@ gol::GameOfLife::GameOfLife(int total_ticks_in, int tick_length_in) {
     tick_length = tick_length_in;
     row_pad = 6;
     col_pad = 10;
+
+    paused = false;
+    running = true;
 }
 
 void gol::GameOfLife::Init() {
-    rows = getSize(0) - row_pad;
-    cols = getSize(1) - col_pad;
+    paused = false;
+    rows = GetSize(0) - row_pad;
+    cols = GetSize(1) - col_pad;
     space.assign(rows, std::vector<int>(cols));
     space_aux = space;
     outstr = "";
@@ -24,30 +28,82 @@ void gol::GameOfLife::Init() {
 }
 
 void gol::GameOfLife::Run() {
-    while (1) {
+    struct termios originalTcAttributes;
+    struct termios newTcAttributes;
+
+    // Save the original terminal attributes
+    tcgetattr(STDIN_FILENO, &originalTcAttributes);
+
+    // Disable canonical mode (line buffering) and echoing.
+    newTcAttributes = originalTcAttributes;
+    newTcAttributes.c_lflag &= ~(ICANON | ECHO);
+    tcsetattr(STDIN_FILENO, TCSANOW, &newTcAttributes);
+    /*** termios ***/
+
+    while (running) {
         Init();
         Render(0);
-        usleep(3000000);
-        for (tick = 0; tick < total_ticks; tick++) {
-            Update();
-            Render(tick);
+        usleep(1000000);
+        for (tick = 0; tick < total_ticks;) {
+            if (KeyPressed()) {
+                char keyPressed = getchar();
+                if (keyPressed == 'p' || keyPressed == 'P') {
+                    TogglePause();
+                } else if (keyPressed == 'q' || keyPressed == 'Q') {
+                    running = false;
+                    Over("Closed Game of Life");
+                } else if (keyPressed == 's' || keyPressed == 'S') {
+                    // reduce speed
+                    tick_length *= 2;
+                    if (tick_length > 800000) tick_length = 800000;
+                } else if (keyPressed == 'f' || keyPressed == 'F') {
+                    // increase speed
+                    tick_length /= 2;
+                    if (tick_length < 12500) tick_length = 12500;
+                }
+            }
+            if (!paused) {
+                Update();
+                Render(tick);
+                tick++;
+            }
             usleep(tick_length);
         }
-        Over();
-        usleep(3000000);
+        if (running) Over("Restarting Game of Life");
+        usleep(1500000);
     }
+
+    /*** termios ***/
+    // Restore original terminal attributes when done.
+    tcsetattr(STDIN_FILENO, TCSANOW, &originalTcAttributes);
+    /*** termios ***/
 }
 
 void gol::GameOfLife::Render(int tick) {
-    int width = getSize(1);
-    std::string tick_str = std::to_string(tick);
-    int pad = std::max(0, 6 - static_cast<int>(tick_str.size()));
-    std::string padding(pad, ' ');
-    std::string trailer =
-        "*****     tick : " + padding + tick_str + "      *****\n";
+    if (tick > total_ticks) return;
 
-    outstr = "\n" + std::string((width - trailer.size()) / 2, ' ');
-    outstr += trailer;
+    int width = GetSize(1);
+    std::string tick_str = std::to_string(tick);
+    int pad = std::max(0, 4 - static_cast<int>(tick_str.size()));
+    std::string padding(pad, ' ');
+    std::string center = "***   tick : " + padding + tick_str + "    ***";
+
+    // optional tick length display
+    center += " | " + std::to_string(tick_length) + " |";
+
+    std::string left = "     quit(q) | slow(s)";
+    std::string right = "fast(f) | pause(p)     ";
+    int left_width = std::max(0, (width - static_cast<int>(center.size())) / 2 -
+                                     static_cast<int>(left.size()));
+    int right_width =
+        std::max(0, (width - static_cast<int>(center.size())) / 2 -
+                        static_cast<int>(right.size()));
+
+    outstr = "\n";
+    outstr += left + std::string(left_width, ' ');
+    outstr += center;
+    outstr += std::string(right_width, ' ') + right;
+    outstr += "\n";
 
     outstr += divider();
     for (int i = 0; i < rows; i++) {
@@ -64,17 +120,15 @@ void gol::GameOfLife::Render(int tick) {
     }
     outstr += divider();
     std::cout << outstr << std::endl;
-    // outstr.resize(0);
 }
 
 void gol::GameOfLife::Update() {
-    if (rows != getSize(0) - row_pad || cols != getSize(1) - col_pad) {
-        // force game over
-        tick = total_ticks;
+    if (rows != GetSize(0) - row_pad || cols != GetSize(1) - col_pad) {
+        Over("Updating Screen Size");
     }
     for (int i = 0; i < rows && i < space_aux.size(); i++) {
         for (int j = 0; j < cols && j < space_aux[0].size(); j++) {
-            int numCells = getCells(i, j);
+            int numCells = GetCells(i, j);
             space_aux[i][j] =
                 (numCells == 3 || (numCells == 2 && space[i][j])) ? 1 : 0;
         }
@@ -82,17 +136,22 @@ void gol::GameOfLife::Update() {
     space.swap(space_aux);
 }
 
-void gol::GameOfLife::Over() {
-    int height = getSize(0);
-    int width = getSize(1);
-    std::string padding((width - 10) / 2, ' ');
+void gol::GameOfLife::Over(std::string splash_string) {
+    // force game over
+    tick = total_ticks + 1;
+
+    int height = GetSize(0);
+    int width = GetSize(1);
+    std::string padding((width - splash_string.size()) / 2, ' ');
     outstr = std::string(height / 2 - 1, '\n');
-    outstr += padding + "Game Over";
+    outstr += padding + splash_string;
     outstr += std::string(height / 2 - 1, '\n');
     std::cout << outstr << std::endl;
 }
 
-int gol::GameOfLife::getSize(int x) {
+void gol::GameOfLife::TogglePause() { paused = !paused; }
+
+int gol::GameOfLife::GetSize(int x) {
     struct winsize w;
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
 
@@ -102,7 +161,7 @@ int gol::GameOfLife::getSize(int x) {
         return w.ws_col;
 }
 
-int gol::GameOfLife::getCells(int i, int j) {
+int gol::GameOfLife::GetCells(int i, int j) {
     int result = 0;
     result += space[(i - 1 + rows) % rows][(j - 1 + cols) % cols];
     result += space[(i - 1 + rows) % rows][j];
@@ -113,6 +172,32 @@ int gol::GameOfLife::getCells(int i, int j) {
     result += space[(i + 1) % rows][j];
     result += space[(i + 1) % rows][(j + 1) % cols];
     return result;
+}
+
+bool gol::GameOfLife::KeyPressed() {
+    // Needs cleanup
+    // don't understand somethings here
+    struct termios term;
+    tcgetattr(STDIN_FILENO, &term);
+
+    struct termios term_orig = term;
+    term.c_lflag &= ~(ICANON | ECHO);
+    tcsetattr(STDIN_FILENO, TCSANOW, &term);
+
+    int fd = fcntl(STDIN_FILENO, F_GETFL, 0);
+    fcntl(STDIN_FILENO, F_SETFL, fd | O_NONBLOCK);
+
+    int key = getchar();
+
+    tcsetattr(STDIN_FILENO, TCSANOW, &term_orig);
+    fcntl(STDIN_FILENO, F_SETFL, fd);
+
+    if (key != EOF) {
+        ungetc(key, stdin);
+        return true;
+    }
+
+    return false;
 }
 
 std::string gol::GameOfLife::divider() {

@@ -9,12 +9,9 @@ Features:
     - Zoom in/out
     - Font-size increase/decrease
     - Resize terminal window
-
-Goals:
-
-- [X] Aware of terminal size. (Zoom out on your terminal to get more cells)
-- [ ] Start, Stop, Reset Cells
-- [ ] Slower, Faster, Reset Speed
+- Simulation Controls
+    - Pause / Unpause, Quit Simulation
+    - Slower / Faster Simulation
 
 Requirements:
 
