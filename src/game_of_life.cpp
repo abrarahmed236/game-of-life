@@ -83,13 +83,20 @@ void gol::GameOfLife::Render(int tick) {
     if (tick > total_ticks) return;
 
     int width = GetSize(1);
+
+    /*** Center String ***/
     std::string tick_str = std::to_string(tick);
     int pad = std::max(0, 4 - static_cast<int>(tick_str.size()));
     std::string padding(pad, ' ');
-    std::string center = "***   tick : " + padding + tick_str + "    ***";
 
-    // optional tick length display
-    center += " | " + std::to_string(tick_length) + " |";
+    std::string center = "***  ticks: " + padding + tick_str;
+
+    float speed = 100000.0 / tick_length;
+    std::string speed_str = std::to_string(speed);
+    speed_str.resize(4);
+
+    center += " | speed: " + speed_str + "x  ***";
+    /*** Center String ***/
 
     std::string left = "     quit(q) | slow(s)";
     std::string right = "fast(f) | pause(p)     ";
