@@ -1,22 +1,21 @@
 #include "game_of_life.h"
 
-gol::GameOfLife::GameOfLife(int total_ticks_in, int tick_length_in) {
-    total_ticks = total_ticks_in;
-    tick_length = tick_length_in;
-    row_pad = 6;
-    col_pad = 10;
-
-    paused = false;
-    running = true;
+gol::GameOfLife::GameOfLife(int total_ticks_in, int tick_length_in)
+    : total_ticks(total_ticks_in),  // Total number of ticks / frames
+      tick_length(tick_length_in),  // Length of each tick in milliseconds
+      row_pad(6),                   // Padding for rows
+      col_pad(10),                  // Padding for columns
+      paused(false),                // Game starts unpaused
+      running(true) {               // Game is initially running
 }
 
 void gol::GameOfLife::Init() {
     paused = false;
-    rows = GetSize(0) - row_pad;
-    cols = GetSize(1) - col_pad;
+    rows = GetTTYrows() - row_pad;
+    cols = GetTTYcols() - col_pad;
     space.assign(rows, std::vector<int>(cols));
     space_aux = space;
-    outstr = "";  // outstr.resize ?
+    outstr.clear();
 
     srand(time(NULL));
     for (int i = rows / 20; i <= 19 * rows / 20; i++) {
@@ -81,7 +80,7 @@ void gol::GameOfLife::Run() {
 void gol::GameOfLife::Render(int tick) {
     if (tick > total_ticks) return;
 
-    int width = GetSize(1);
+    int width = GetTTYcols();
 
     /*** Center String ***/
     std::string tick_str = std::to_string(tick);
@@ -129,7 +128,7 @@ void gol::GameOfLife::Render(int tick) {
 }
 
 void gol::GameOfLife::Update() {
-    if (rows != GetSize(0) - row_pad || cols != GetSize(1) - col_pad) {
+    if (rows != GetTTYrows() - row_pad || cols != GetTTYcols() - col_pad) {
         Over("Updating Screen Size");
     }
     for (int i = 0; i < rows && i < space_aux.size(); i++) {
@@ -146,8 +145,8 @@ void gol::GameOfLife::Over(std::string splash_string) {
     // force game over
     tick = total_ticks + 1;
 
-    int height = GetSize(0);
-    int width = GetSize(1);
+    int height = GetTTYrows();
+    int width = GetTTYcols();
     std::string padding((width - splash_string.size()) / 2, ' ');
     outstr = std::string(height / 2 - 1, '\n');
     outstr += padding + splash_string;
@@ -157,14 +156,16 @@ void gol::GameOfLife::Over(std::string splash_string) {
 
 void gol::GameOfLife::TogglePause() { paused = !paused; }
 
-int gol::GameOfLife::GetSize(int x) {
+int gol::GameOfLife::GetTTYrows() {
     struct winsize w;
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+    return w.ws_row;
+}
 
-    if (x == 0)  // x == 0 indicates rows
-        return w.ws_row;
-    else  // x == 1 indcates columns
-        return w.ws_col;
+int gol::GameOfLife::GetTTYcols() {
+    struct winsize w;
+    ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+    return w.ws_col;
 }
 
 int gol::GameOfLife::GetCells(int i, int j) {
@@ -181,8 +182,6 @@ int gol::GameOfLife::GetCells(int i, int j) {
 }
 
 bool gol::GameOfLife::KeyPressed() {
-    // Needs cleanup
-    // don't understand somethings here
     struct termios term;
     tcgetattr(STDIN_FILENO, &term);
 
@@ -206,7 +205,6 @@ bool gol::GameOfLife::KeyPressed() {
     return false;
 }
 
-/*
 std::string gol::GameOfLife::divider() {
     std::string result = "    ";
     for (int i = 0; i < cols + 2; i++) {
@@ -215,4 +213,3 @@ std::string gol::GameOfLife::divider() {
     result.push_back('\n');
     return result;
 }
-*/

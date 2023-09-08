@@ -9,7 +9,6 @@ add_executable(
     Game_Of_Life
     src/main.cpp
     src/game_of_life.cpp
-    src/divider.cpp
 )
 
 set_target_properties(Game_Of_Life PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")

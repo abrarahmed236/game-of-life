@@ -1,7 +1,7 @@
 #ifndef Game_Of_Life
 #define Game_Of_Life
 
-#include <fcntl.h> // for keypress
+#include <fcntl.h>      // for keypress
 #include <sys/ioctl.h>  // for tty size
 #include <termios.h>    // for tc_attributes
 #include <unistd.h>     // for usleep() function
@@ -30,7 +30,8 @@ class GameOfLife {
 
     void TogglePause();
 
-    int GetSize(int x);
+    int GetTTYrows();
+    int GetTTYcols();
     int GetCells(int i, int j);
     bool KeyPressed();
     std::string divider();
