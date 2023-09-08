@@ -16,8 +16,7 @@ void gol::GameOfLife::Init() {
     cols = GetSize(1) - col_pad;
     space.assign(rows, std::vector<int>(cols));
     space_aux = space;
-    outstr = "";
-    // outstr.reserve(38600);
+    outstr = "";  // outstr.resize ?
 
     srand(time(NULL));
     for (int i = rows / 20; i <= 19 * rows / 20; i++) {
@@ -207,6 +206,7 @@ bool gol::GameOfLife::KeyPressed() {
     return false;
 }
 
+/*
 std::string gol::GameOfLife::divider() {
     std::string result = "    ";
     for (int i = 0; i < cols + 2; i++) {
@@ -215,3 +215,4 @@ std::string gol::GameOfLife::divider() {
     result.push_back('\n');
     return result;
 }
+*/

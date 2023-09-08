@@ -4,6 +4,8 @@
 - Refactor for easier readability.
     - Move getSize to separate .cpp / .h files.
     - Split code into separate files.
+- Use line up to overwrite screen ?
+    - [Link](https://itnext.io/overwrite-previously-printed-lines-4218a9563527)
 
 ## No Plans
 
